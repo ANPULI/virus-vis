@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "start": "npx parcel index.html",
+        "build": "rm -rf public && npx parcel build index.html && mkdir public && mv dist/* public/ && rm -rf dist/"
+    },
+    "dependencies": {
+        "echarts": "^4.6.0"
+    },
+    "devDependencies": {
+        "@types/echarts": "^4.4.2",
+        "parcel": "^1.12.4"
+    }
+}
