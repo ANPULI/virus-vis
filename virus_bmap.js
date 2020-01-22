@@ -9,7 +9,7 @@ var convertData = function (data) {
     for (var i = 0; i < data.length; i++) {
         var province = data[i].name.slice(0, 2)
         var geoCoord = geoCoordMap[province];
-        if (! geoCoord) {
+        if (!geoCoord) {
             province = data[i].name.slice(0, 3)
             geoCoord = geoCoordMap[province];
         }
@@ -31,7 +31,7 @@ var myChart = echarts.init(document.getElementById('main'));
 
 
 var option = {
-    title :{
+    title: {
         text: "全国新型肺炎疫情实时动态 - 2020/1/22",
         subtext: "数据来源：澎湃新闻 & 丁香医生",
         sublink: "https://mp.weixin.qq.com/s/-16yyC-KXx6Od7MCHd51Tw",
@@ -155,13 +155,14 @@ var option = {
         left: 'left',
         top: 'top',
         feature: {
-            dataView: {readOnly: false},
+            dataView: {
+                readOnly: false
+            },
             restore: {},
             saveAsImage: {}
         }
     },
-    series : [
-        {
+    series: [{
             name: '影响人数',
             type: 'scatter',
             coordinateSystem: 'bmap',
@@ -209,7 +210,8 @@ var option = {
                 shadowColor: '#333'
             },
             zlevel: 1
-        }]
+        }
+    ]
 };
 
 // console.log(myChart)
