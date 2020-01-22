@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
-    <script src="https://api.map.baidu.com/api?v=2.0&ak=1g6j9GKGrYUX9phnGR547KCDu2F1Z0bo"></script>
+<!--引入百度地图的jssdk，这里需要使用你在百度地图开发者平台申请的 ak-->
+<script src="https://api.map.baidu.com/api?v=2.0&ak=1g6j9GKGrYUX9phnGR547KCDu2F1Z0bo"></script>
+
 <head>
     <meta charset="utf-8">
     <title>全国新型肺炎疫情实时动态 - 2020/1/22</title>
@@ -10,11 +12,11 @@
         }
     </style>
 </head>
+
 <body style="position: absolute; width: 100%; height: 100%;">
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
     <div id="main" style="position: relative; width: 100%; height:100%; margin: auto;"></div>
-    <script src="./virus_bmap.js">
-    </script>
-    <!--引入百度地图的jssdk，这里需要使用你在百度地图开发者平台申请的 ak-->
+    <script src="./virus_bmap.js"></script>
 </body>
+
 </html>
