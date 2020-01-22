@@ -33,8 +33,8 @@ var myChart = echarts.init(document.getElementById('main'));
 var option = {
     title: {
         text: "全国新型肺炎疫情实时动态 - 2020/1/22",
-        subtext: "数据来源：澎湃新闻 & 丁香医生",
-        sublink: "https://mp.weixin.qq.com/s/-16yyC-KXx6Od7MCHd51Tw",
+        subtext: "数据来源：维基百科",
+        sublink: "https://zh.wikipedia.org/wiki/2019年%EF%BC%8D2020年新型冠狀病毒肺炎事件",
         left: "center"
     },
     tooltip: {
@@ -42,7 +42,7 @@ var option = {
         showDelay: 0,
         transitionDuration: 0.2,
         formatter: function (params) {
-            return params.seriesName + ' - ' + params.name + '<br/>' + '确诊：' + params.value[2] + '<br/>' + '疑似：' + params.value[3];
+            return params.seriesName + '<br/>' + params.name + ': ' + params.value[2];
         }
     },
     bmap: {
@@ -163,12 +163,12 @@ var option = {
         }
     },
     series: [{
-            name: '影响人数',
+            name: '确诊人数',
             type: 'scatter',
             coordinateSystem: 'bmap',
             data: convertData(data),
             symbolSize: function (val) {
-                return 30 * Math.log10(val[2] + val[3] + 1);
+                return 30 * Math.log10(val[2] + 1);
             },
             label: {
                 formatter: '{b}',
@@ -192,7 +192,7 @@ var option = {
                 return b.value[2] - a.value[2];
             }).slice(0, 6),
             symbolSize: function (val) {
-                return 30 * Math.log10(val[2] + val[3] / 5 + 1);
+                return 30 * Math.log10(val[2] + 1);
             },
             showEffectOn: 'render',
             rippleEffect: {

@@ -28,32 +28,35 @@ china_data = table_to_data(china_table)
 #     print(t)
 
 # normalize china data
-for i in range(1, len(china_data)):
-    row = china_data[i]
-    if 4 == len(row):
+def normalize_data(china_data):
+    for i in range(1, len(china_data)):
+        row = china_data[i]
+        if 4 == len(row):
+            place = row[0]
+            date = row[1]
+            source = row[3]
+            continue
+        elif 3 == len(row):
+            china_data[i].insert(0, place)
+        elif 2 == len(row):
+            if "20" == row[0][:2]:
+                china_data[i].insert(2, source)
+                china_data[i].insert(0, place)
+            else:
+                china_data[i][0:0] = (place, date)
+        elif 1 == len(row):
+            china_data[i].insert(1, source)
+            china_data[i][0:0] = (place, date)
+        else:
+            print(row)
+        row = china_data[i]
         place = row[0]
         date = row[1]
         source = row[3]
-        continue
-    elif 3 == len(row):
-        china_data[i].insert(0, place)
-    elif 2 == len(row):
-        if "20" == row[0][:2]:
-            china_data[i].insert(2, source)
-            china_data[i].insert(0, place)
-        else:
-            china_data[i][0:0] = (place, date)
-    elif 1 == len(row):
-        china_data[i].insert(1, source)
-        china_data[i][0:0] = (place, date)
-    else:
-        print(row)
-    row = china_data[i]
-    place = row[0]
-    date = row[1]
-    source = row[3]
+    return china_data
 # for t in china_data:
 #     print(t)
+china_data = normalize_data(china_data)
 
 import pandas as pd
 
@@ -63,27 +66,45 @@ print(df.head())
 # get the latest news
 latest_index = df.groupby('place', sort=False).date.tail(1).index
 
-import jieba
-import jieba.posseg as pseg
+import re
 confirm_dict = dict()
-for i in latest_index:
-    # print(df.loc[i])
-    s = df.loc[i].desc
-    words = pseg.cut(s, use_paddle=True)
-    res = []
-    for word, flag in words:
-        if word[-1:] == '例' and flag == 'm':
-            # print("%s %s" % (word, flag))
-            if word[:-1].isdigit():
-                res.append(int(word[:-1]))
-            else:
-                res.append(1)
-    num_confirmed = 1 if not res else max(res)
-    print(df.loc[i].place, num_confirmed)
-    confirm_dict[df.loc[i].place] = num_confirmed
+for i in df.index:
+    place = df.loc[i].place
+    desc = df.loc[i].desc
+    res = re.search('累计[0-9]+例', desc)
+    if not res:
+        res = re.search('共出现[0-9]+例', desc)
+    if not res:
+        num_confirmed = 1
+    else:
+        num_confirmed = int(re.search(r'\d+', res.group()).group())
+    confirm_dict[place] = max(num_confirmed, confirm_dict.get(place, 0))
+
 print(confirm_dict)
 
 import json
 confirm_json = json.dumps(confirm_dict, ensure_ascii=False)
 print(type(confirm_json))
 print(confirm_json)
+
+# use jieba to split, aborted
+# import jieba
+# import jieba.posseg as pseg
+# confirm_dict = dict()
+# for i in latest_index:
+#     # print(df.loc[i])
+#     s = df.loc[i].desc
+#     words = pseg.cut(s, use_paddle=True)
+#     res = []
+#     for word, flag in words:
+#         if word[-1:] == '例' and flag == 'm':
+#             print("%s %s" % (word, flag))
+#             if word[:-1].isdigit():
+#                 res.append(int(word[:-1]))
+#             else:
+#                 res.append(1)
+#     num_confirmed = 1 if not res else max(res)
+#     print(df.loc[i].place, num_confirmed)
+#     confirm_dict[df.loc[i].place] = num_confirmed
+# print(confirm_dict)
+
