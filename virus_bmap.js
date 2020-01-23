@@ -54,8 +54,8 @@ console.log(convertData(data).sort(function (a, b) {
 function getOption(data) {
     var option = {
         title: {
-            text: "全国新型肺炎疫情实时动态 - 2020/1/22",
-            subtext: "数据来源：维基百科",
+            text: "全国新型肺炎疫情实时动态",
+            subtext: "数据来源：维基百科 | " + new Date().toLocaleString('zh').slice(0, -3),
             sublink: "https://zh.wikipedia.org/wiki/2019年%EF%BC%8D2020年新型冠狀病毒肺炎事件",
             left: "center"
         },
