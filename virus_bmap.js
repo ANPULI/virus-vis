@@ -1,8 +1,9 @@
 import echarts from "echarts";
-import bmap from "echarts/extension/bmap/bmap";
+import "echarts/extension/bmap/bmap";
 // console.log(bmap)
 import geoCoordMap from './assets/geoCoord.json'
 // import data from "./assets/provinceInfection.json"
+
 
 const url = "https://virus-spider.now.sh/api";
 var myChart = echarts.init(document.getElementById('main'));
@@ -21,11 +22,17 @@ fetch(url)
             var data = myJson;
             var option = getOption(data)
             myChart.setOption(option);
+            var bmap = myChart.getModel().getComponent('bmap').getBMap();
+            bmap.addControl(new BMap.NavigationControl());
+            bmap.addControl(new BMap.ScaleControl());
+            bmap.addControl(new BMap.MapTypeControl());
+            bmap.addControl(new BMap.CopyrightControl());
+            bmap.addControl(new BMap.GeolocationControl());
         })
     });
 
 // data = await (await fetch(url)).json();
-console.log("data", data);
+// console.log("data", data);
 
 function convertData(data) {
     var res = [];
