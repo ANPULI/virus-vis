@@ -20,14 +20,52 @@ echarts.registerMap('CN', geoJson);
 fetch(url)
     .then((response) => {
         response.json()
-        .then((myJson) => {
-            console.log("myJson", myJson);
-            var data = myJson;
-            var option = getOption(data)
-            myChart.setOption(option);
-            var bmap = myChart.getModel().getComponent('bmap').getBMap();
-            bmapAddControl(bmap);
-        })
+            .then((myJson) => {
+                console.log("myJson", myJson);
+                var data = myJson.sort(function (a, b) {
+                    return b.value[2] - a.value[2];
+                });
+                let shader_data = getShadedData(data);
+                var option = getOption(data)
+                myChart.setOption(option);
+                var bmap = myChart.getModel().getComponent('bmap').getBMap();
+                bmapAddControl(bmap);
+                // Create GeoCoordinate Instance
+                var myGeo = new BMap.Geocoder();
+                
+                let provList = shader_data; //通过取色器获取各省颜色
+                function getBoundary(provItem) {
+                    // console.log(provItem);   
+                    var bdary = new BMap.Boundary();
+                    // console.log(promisedGetGeoCoord(myGeo, provItem[0]).value);
+                    // var provName = convertStandardRegionName(myGeo, provItem[0]);
+                    // console.log(provName);
+                    bdary.get(provItem[0], function (rs) { //获取行政区域
+                        var count = rs.boundaries.length; //行政区域的点有多少个
+                        if (count === 0) {
+                            console.log('未能获取当前输入行政区域');
+                            console.log(provItem[0]);
+                            return;
+                        }
+                        var pointArray = [];
+                        for (var i = 0; i < count; i++) {
+                            let ply = new BMap.Polygon(rs.boundaries[i], {
+                                strokeWeight: 1,
+                                strokeColor: "#aaaaaa",
+                                fillColor: provItem[1]
+                            }); //建立多边形覆盖物
+                            bmap.addOverlay(ply); //添加覆盖物
+                            pointArray = pointArray.concat(ply.getPath());
+                        }
+                    });
+                }
+
+                setTimeout(function () {
+                    provList.forEach(function (item) {
+                        getBoundary(item);
+                    });
+                }, 20);
+            })
     });
 
 // data = await (await fetch(url)).json();
@@ -64,6 +102,53 @@ function bmapAddControl(bmap) {
     bmap.addControl(new BMap.GeolocationControl());
 }
 
+function getShadedData(data) {
+    // ['#FFFFFF', '#E06F09', '#FFD20A', '#EA3300', '#7D001C']
+    let res = new Array();
+    let N = data.length;
+    let Q = N / 4;
+    let color;
+    for (let i = 0; i < N; i++) {
+        if (i < Q) {
+            color = '#7D001C';
+        } else if (i < 2 * Q) {
+            color = '#EA3300';
+        } else if (i < 3 * Q) {
+            color = '#FFD20A';
+        } else {
+            color = (data[i].value === 0) ? '#FFFFFF' : '#E06F09'
+        }
+        res.push([data[i].name, color]);
+    }
+    return res;
+}
+
+function promisedGetAdminRegionName(myGeo, lng, lat) {
+    return new Promise((resolve, reject) => {
+        myGeo.getLocation(new BMap.Point(lng, lat), (result) => {
+            if (result) Promise.resolve(result.addressComponents.province);
+            else reject();
+        })
+    });
+}
+
+function promisedGetGeoCoord(myGeo, place) {
+    return new Promise((resolve, reject) => {
+        myGeo.getPoint(place, (point) => {
+            if (point) Promise.resolve(point);
+            else reject();
+        }, place);
+    });
+}
+
+function convertStandardRegionName(myGeo, province) {
+    // var coord = promisedGetGeoCoord(myGeo, province);
+    // return promisedGetAdminRegionName(myGeo, coord.lng, coord.lat);
+    return new Promise((resolve, reject) => {
+        let coord = promisedGetGeoCoord(myGeo, province);
+        Promise.resolve(promisedGetAdminRegionName(myGeo, coord.lng, coord.lat));
+    });
+}
 
 function getOption(data) {
     var option = {
@@ -96,7 +181,7 @@ function getOption(data) {
         },
         bmap: {
             center: [114.114129, 32.550339],
-            zoom: 6,
+            zoom: 5,
             roam: true,
             mapStyle: {
                 styleJson: [{
@@ -198,14 +283,13 @@ function getOption(data) {
                 }]
             }
         },
-        series: [
-            {
+        series: [{
                 name: '确诊人数',
                 type: 'scatter',
                 coordinateSystem: 'bmap',
                 data: convertData(data),
                 symbolSize: function (val) {
-                    return 30 * Math.log10(val[2] + 1);
+                    return 20 * Math.log10(val[2] + 1);
                 },
                 label: {
                     formatter: '{b}',
@@ -229,7 +313,7 @@ function getOption(data) {
                     return b.value[2] - a.value[2];
                 }).slice(0, 6),
                 symbolSize: function (val) {
-                    return 30 * Math.log10(val[2] + 1);
+                    return 20 * Math.log10(val[2] + 1);
                 },
                 showEffectOn: 'render',
                 rippleEffect: {
