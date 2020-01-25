@@ -2,11 +2,14 @@ import echarts from "echarts";
 import "echarts/extension/bmap/bmap";
 // console.log(bmap)
 import geoCoordMap from './assets/geoCoord.json'
+import geoJson from './assets/map.geo.json'
+console.log(geoJson)
 // import data from "./assets/provinceInfection.json"
 
 
 const url = "https://virus-spider.now.sh/api";
 var myChart = echarts.init(document.getElementById('main'));
+echarts.registerMap('CN', geoJson);
 // var data;
 // const request = async () => {
 //     const response = await fetch(url);
@@ -23,11 +26,7 @@ fetch(url)
             var option = getOption(data)
             myChart.setOption(option);
             var bmap = myChart.getModel().getComponent('bmap').getBMap();
-            bmap.addControl(new BMap.NavigationControl());
-            bmap.addControl(new BMap.ScaleControl());
-            bmap.addControl(new BMap.MapTypeControl());
-            bmap.addControl(new BMap.CopyrightControl());
-            bmap.addControl(new BMap.GeolocationControl());
+            bmapAddControl(bmap);
         })
     });
 
@@ -52,10 +51,18 @@ function convertData(data) {
     }
     return res;
 }
-console.log(convertData(data));
-console.log(convertData(data).sort(function (a, b) {
-    return b.value[2] - a.value[2];
-}).slice(0, 6));
+// console.log(convertData(data));
+// console.log(convertData(data).sort(function (a, b) {
+//     return b.value[2] - a.value[2];
+// }).slice(0, 6));
+
+function bmapAddControl(bmap) {
+    bmap.addControl(new BMap.NavigationControl());
+    bmap.addControl(new BMap.ScaleControl());
+    bmap.addControl(new BMap.MapTypeControl());
+    bmap.addControl(new BMap.CopyrightControl());
+    bmap.addControl(new BMap.GeolocationControl());
+}
 
 
 function getOption(data) {
@@ -72,6 +79,19 @@ function getOption(data) {
             transitionDuration: 0.2,
             formatter: function (params) {
                 return params.seriesName + '<br/>' + params.name + ': ' + params.value[2];
+            }
+        },
+        toolbox: {
+            show: true,
+            //orient: 'vertical',
+            left: 'left',
+            top: 'top',
+            feature: {
+                dataView: {
+                    readOnly: false
+                },
+                restore: {},
+                saveAsImage: {}
             }
         },
         bmap: {
@@ -178,20 +198,8 @@ function getOption(data) {
                 }]
             }
         },
-        toolbox: {
-            show: true,
-            //orient: 'vertical',
-            left: 'left',
-            top: 'top',
-            feature: {
-                dataView: {
-                    readOnly: false
-                },
-                restore: {},
-                saveAsImage: {}
-            }
-        },
-        series: [{
+        series: [
+            {
                 name: '确诊人数',
                 type: 'scatter',
                 coordinateSystem: 'bmap',
