@@ -8,7 +8,8 @@ console.log(geoJson)
 
 
 const url = "https://virus-spider.now.sh/api";
-var myChart = echarts.init(document.getElementById('main'));
+var geoChart = echarts.init(document.getElementById('main'));
+var lineChart = echarts.init(document.getElementById('line'))
 echarts.registerMap('CN', geoJson);
 // var data;
 // const request = async () => {
@@ -22,18 +23,23 @@ fetch(url)
         response.json()
             .then((myJson) => {
                 console.log("myJson", myJson);
-                var data = myJson.sort(function (a, b) {
-                    return b.value[0] - a.value[0];
+                window.myJson = myJson;
+                window.myData = myJson.confirmed.累计;
+                console.log('sss')
+                var data = myJson.confirmed.累计.sort(function (a, b) {
+                    return b.value - a.value;
                 });
+                window.data = data;
                 let shader_data = getShadedData(data);
-                var option = getOption(data)
-                myChart.setOption(option);
-                var bmap = myChart.getModel().getComponent('bmap').getBMap();
+                let geoOption = getGeoOption(data);
+                geoChart.setOption(geoOption);
+                var bmap = geoChart.getModel().getComponent('bmap').getBMap();
                 bmapAddControl(bmap);
+                addShader(shader_data, bmap);
                 // Create GeoCoordinate Instance
                 // var myGeo = new BMap.Geocoder();
-                
-                addShader(shader_data, bmap);
+                let lineOption = getLineOption(data);
+                lineChart.setOption(lineOption);
             })
     });
 
@@ -119,7 +125,7 @@ function addShader(provList, bmap) {
         provList.forEach(function (item) {
             getBoundary(item);
         });
-    }, 50);
+    }, 0);
 }
 
 // function promisedGetAdminRegionName(myGeo, lng, lat) {
@@ -149,8 +155,8 @@ function addShader(provList, bmap) {
 //     });
 // }
 
-function getOption(data) {
-    var option = {
+function getGeoOption(data) {
+    let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
             subtext: "数据来源：维基百科 | " + new Date().toLocaleString('zh').slice(0, -3),
@@ -330,9 +336,122 @@ function getOption(data) {
                     shadowColor: '#333'
                 },
                 zlevel: 1
+            },
+            {
+                name: '邮件营销',
+                type: 'line',
+                stack: '总量',
+                data: [120, 132, 101, 134, 90, 230, 210]
+            },
+            {
+                name: '联盟广告',
+                type: 'line',
+                stack: '总量',
+                data: [220, 182, 191, 234, 290, 330, 310]
+            },
+            {
+                name: '视频广告',
+                type: 'line',
+                stack: '总量',
+                data: [150, 232, 201, 154, 190, 330, 410]
+            },
+            {
+                name: '直接访问',
+                type: 'line',
+                stack: '总量',
+                data: [320, 332, 301, 334, 390, 330, 320]
+            },
+            {
+                name: '搜索引擎',
+                type: 'line',
+                stack: '总量',
+                data: [820, 932, 901, 934, 1290, 1330, 1320]
+            }
+        ],
+        legend: {
+            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        },
+        yAxis: {
+            type: 'value'
+        }
+    }
+    return option;
+}
+function getLineOption(data) {
+    let option = {
+        title: {
+            text: '折线图堆叠'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: '邮件营销',
+                type: 'line',
+                stack: '总量',
+                data: [120, 132, 101, 134, 90, 230, 210]
+            },
+            {
+                name: '联盟广告',
+                type: 'line',
+                stack: '总量',
+                data: [220, 182, 191, 234, 290, 330, 310]
+            },
+            {
+                name: '视频广告',
+                type: 'line',
+                stack: '总量',
+                data: [150, 232, 201, 154, 190, 330, 410]
+            },
+            {
+                name: '直接访问',
+                type: 'line',
+                stack: '总量',
+                data: [320, 332, 301, 334, 390, 330, 320]
+            },
+            {
+                name: '搜索引擎',
+                type: 'line',
+                stack: '总量',
+                data: [820, 932, 901, 934, 1290, 1330, 1320]
             }
         ]
-    }
+    };
+    
     return option;
 }
 // console.log(myChart)
