@@ -9,7 +9,6 @@ console.log(geoJson)
 
 const url = "https://virus-spider.now.sh/api";
 var geoChart = echarts.init(document.getElementById('main'));
-var lineChart = echarts.init(document.getElementById('line'))
 echarts.registerMap('CN', geoJson);
 // var data;
 // const request = async () => {
@@ -23,23 +22,16 @@ fetch(url)
         response.json()
             .then((myJson) => {
                 console.log("myJson", myJson);
-                window.myJson = myJson;
-                window.myData = myJson.confirmed.累计;
-                console.log('sss')
-                var data = myJson.confirmed.累计.sort(function (a, b) {
-                    return b.value - a.value;
-                });
+                var data = myJson;
                 window.data = data;
-                let shader_data = getShadedData(data);
-                let geoOption = getGeoOption(data);
+                let shader_data = getShadedData(data.确诊.累计);
+                let geoOption = getOption(data);
                 geoChart.setOption(geoOption);
                 var bmap = geoChart.getModel().getComponent('bmap').getBMap();
                 bmapAddControl(bmap);
                 addShader(shader_data, bmap);
                 // Create GeoCoordinate Instance
                 // var myGeo = new BMap.Geocoder();
-                let lineOption = getLineOption(data);
-                lineChart.setOption(lineOption);
             })
     });
 
@@ -155,7 +147,7 @@ function addShader(provList, bmap) {
 //     });
 // }
 
-function getGeoOption(data) {
+function getOption(data) {
     let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
@@ -185,7 +177,7 @@ function getGeoOption(data) {
             }
         },
         bmap: {
-            center: [114.114129, 32.550339],
+            center: [124.114129, 32.550339],
             zoom: 5,
             roam: true,
             mapStyle: {
@@ -292,7 +284,7 @@ function getGeoOption(data) {
                 name: '确诊人数',
                 type: 'scatter',
                 coordinateSystem: 'bmap',
-                data: convertData(data),
+                data: convertData(data.确诊.累计),
                 symbolSize: function (val) {
                     return 20 * Math.log10(val[2] + 1);
                 },
@@ -314,7 +306,7 @@ function getGeoOption(data) {
                 name: 'Top 5',
                 type: 'effectScatter',
                 coordinateSystem: 'bmap',
-                data: convertData(data).sort(function (a, b) {
+                data: convertData(data.确诊.累计).sort(function (a, b) {
                     return b.value[2] - a.value[2];
                 }).slice(0, 6),
                 symbolSize: function (val) {
@@ -372,7 +364,7 @@ function getGeoOption(data) {
             data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
         },
         grid: {
-            left: '3%',
+            left: '70%',
             right: '4%',
             bottom: '3%',
             containLabel: true
