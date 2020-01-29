@@ -1,7 +1,8 @@
 import echarts from "echarts";
 import "echarts/extension/bmap/bmap";
 // console.log(bmap)
-import geoCoordMap from './assets/geoCoord.json'
+import geoCoordMap from './assets/geoCoordCity.json'
+// import geoCoordMap from './assets/geoCoord.json'
 import geoJson from './assets/map.geo.json'
 console.log(geoJson)
 // import data from "./assets/provinceInfection.json"
@@ -23,12 +24,12 @@ fetch(url)
             .then((myJson) => {
                 console.log("myJson", myJson);
                 var data = myJson;
-                window.data = data;
+                getDailyData(data);
                 let shader_data = getShadedData(data.确诊.累计);
                 let geoOption = getOption(data);
                 geoChart.setOption(geoOption);
                 var bmap = geoChart.getModel().getComponent('bmap').getBMap();
-                bmapAddControl(bmap);
+                // bmapAddControl(bmap);
                 addShader(shader_data, bmap);
                 // Create GeoCoordinate Instance
                 // var myGeo = new BMap.Geocoder();
@@ -117,7 +118,7 @@ function addShader(provList, bmap) {
         provList.forEach(function (item) {
             getBoundary(item);
         });
-    }, 0);
+    }, 50);
 }
 
 // function promisedGetAdminRegionName(myGeo, lng, lat) {
@@ -160,7 +161,8 @@ function getOption(data) {
             showDelay: 0,
             transitionDuration: 0.2,
             formatter: function (params) {
-                return params.seriesName + '<br/>' + params.name + ': ' + params.value[2];
+                let v = (params.value[2] === undefined) ? params.value : params.value[2]
+                return params.seriesName + '<br/>' + params.name + ': ' + v;
             }
         },
         toolbox: {
@@ -178,7 +180,7 @@ function getOption(data) {
         },
         bmap: {
             center: [124.114129, 32.550339],
-            zoom: 5,
+            zoom: 6,
             roam: true,
             mapStyle: {
                 styleJson: [{
@@ -361,11 +363,13 @@ function getOption(data) {
             }
         ],
         legend: {
-            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
+            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎'],
+            orient: 'horizontal',
+            right: '5%'
         },
         grid: {
             left: '70%',
-            right: '4%',
+            right: '1%',
             bottom: '3%',
             containLabel: true
         },
@@ -380,71 +384,19 @@ function getOption(data) {
     }
     return option;
 }
-function getLineOption(data) {
-    let option = {
-        title: {
-            text: '折线图堆叠'
-        },
-        tooltip: {
-            trigger: 'axis'
-        },
-        legend: {
-            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎']
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
-        toolbox: {
-            feature: {
-                saveAsImage: {}
-            }
-        },
-        xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-        },
-        yAxis: {
-            type: 'value'
-        },
-        series: [
-            {
-                name: '邮件营销',
-                type: 'line',
-                stack: '总量',
-                data: [120, 132, 101, 134, 90, 230, 210]
-            },
-            {
-                name: '联盟广告',
-                type: 'line',
-                stack: '总量',
-                data: [220, 182, 191, 234, 290, 330, 310]
-            },
-            {
-                name: '视频广告',
-                type: 'line',
-                stack: '总量',
-                data: [150, 232, 201, 154, 190, 330, 410]
-            },
-            {
-                name: '直接访问',
-                type: 'line',
-                stack: '总量',
-                data: [320, 332, 301, 334, 390, 330, 320]
-            },
-            {
-                name: '搜索引擎',
-                type: 'line',
-                stack: '总量',
-                data: [820, 932, 901, 934, 1290, 1330, 1320]
-            }
-        ]
-    };
-    
-    return option;
+
+function getDailyData(data) {
+    // data looks like
+    // 确诊 [date_i: {place_j: value}]
+    let entries = Object.entries(data);
+    for (const [status, value] of entries) {
+        console.log(status);
+        let daily_total_dict = Object.entries(value);
+        for (const [date, daily_total] of daily_total_dict) {
+
+        }
+    }
+
 }
 // console.log(myChart)
 // var option = getOption(data)
