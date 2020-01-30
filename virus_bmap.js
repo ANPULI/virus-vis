@@ -1,11 +1,8 @@
 import echarts from "echarts";
 import "echarts/extension/bmap/bmap";
-// console.log(bmap)
 import geoCoordMap from './assets/geoCoordCity.json'
 // import geoCoordMap from './assets/geoCoord.json'
 import geoJson from './assets/map.geo.json'
-console.log(geoJson)
-// import data from "./assets/provinceInfection.json"
 
 
 const url = "https://virus-spider.now.sh/api";
@@ -30,7 +27,7 @@ fetch(url)
                 geoChart.setOption(geoOption);
                 lineChart.setOption(lineOption);
                 var bmap = geoChart.getModel().getComponent('bmap').getBMap();
-                // bmapAddControl(bmap);
+                bmapAddControl(bmap);
                 addShader(shader_data, bmap);
                 // Create GeoCoordinate Instance
                 // var myGeo = new BMap.Geocoder();
@@ -64,6 +61,7 @@ function convertData(data) {
 // }).slice(0, 6));
 
 function bmapAddControl(bmap) {
+    bmap.disableScrollWheelZoom();
     bmap.addControl(new BMap.NavigationControl());
     bmap.addControl(new BMap.ScaleControl());
     bmap.addControl(new BMap.MapTypeControl());
@@ -180,7 +178,7 @@ function getOption(data) {
             }
         },
         bmap: {
-            center: [124.114129, 32.550339],
+            center: [114.114129, 32.550339],
             zoom: 6,
             roam: true,
             mapStyle: {
@@ -331,42 +329,8 @@ function getOption(data) {
                     shadowColor: '#333'
                 },
                 zlevel: 1
-            },
-            {
-                name: '确诊',
-                type: 'line',
-                data: data.每日.确诊
-            },
-            {
-                name: '死亡',
-                type: 'line',
-                data: data.每日.死亡
-            },
-            {
-                name: '治愈',
-                type: 'line',
-                data: data.每日.治愈
             }
-        ],
-        legend: {
-            data: ['确诊', '死亡', '治愈'],
-            orient: 'horizontal',
-            right: '5%'
-        },
-        grid: {
-            left: '70%',
-            right: '1%',
-            bottom: '3%',
-            containLabel: true
-        },
-        xAxis: {
-            type: 'category',
-            boundaryGap: false,
-            data: data.每日.日期
-        },
-        yAxis: {
-            type: 'value'
-        }
+        ]
     }
     return option;
 }
@@ -374,23 +338,32 @@ function getOption(data) {
 function getLineOption(data) {
     let option = {
         title: {
-            text: "全国新型肺炎疫情实时动态",
-            subtext: "数据来源：维基百科 | " + new Date().toLocaleString('zh').slice(0, -3),
-            sublink: "https://zh.wikipedia.org/wiki/2019年%EF%BC%8D2020年新型冠狀病毒肺炎事件",
+            text: "全国疫情新增趋势图",
             left: "center"
+        },
+        tooltip: {
+            trigger: 'item',
+            showDelay: 0,
+            transitionDuration: 0.2,
+            formatter: function (params) {
+                let v = (params.value[2] === undefined) ? params.value : params.value[2];
+                return params.seriesName + '<br/>' + params.name + ': ' + v;
+            }
         },
         toolbox: {
             show: true,
             //orient: 'vertical',
-            left: 'left',
+            right: '3%',
             top: 'top',
             feature: {
-                dataView: {
-                    readOnly: false
-                },
-                restore: {},
                 saveAsImage: {}
             }
+        },
+        legend: {
+            data: ['确诊', '死亡', '治愈'],
+            orient: 'horizontal',
+            left: 'center',
+            top: '3%'
         },
         series: [{
                 name: '确诊',
@@ -408,11 +381,6 @@ function getLineOption(data) {
                 data: data.治愈
             }
         ],
-        legend: {
-            data: ['确诊', '死亡', '治愈'],
-            orient: 'horizontal',
-            right: '5%'
-        },
         grid: {
             left: '3%',
             right: '3%',
