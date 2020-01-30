@@ -10,6 +10,7 @@ console.log(geoJson)
 
 const url = "https://virus-spider.now.sh/api";
 var geoChart = echarts.init(document.getElementById('main'));
+var lineChart = echarts.init(document.getElementById('line'));
 echarts.registerMap('CN', geoJson);
 // var data;
 // const request = async () => {
@@ -25,8 +26,9 @@ fetch(url)
                 console.log("myJson", myJson);
                 var data = myJson;
                 let shader_data = getShadedData(data.确诊.累计);
-                let geoOption = getOption(data);
+                let geoOption = getOption(data), lineOption = getLineOption(data.每日);
                 geoChart.setOption(geoOption);
+                lineChart.setOption(lineOption);
                 var bmap = geoChart.getModel().getComponent('bmap').getBMap();
                 // bmapAddControl(bmap);
                 addShader(shader_data, bmap);
@@ -148,7 +150,6 @@ function addShader(provList, bmap) {
 // }
 
 function getOption(data) {
-    let dailyData = getDailyData(data);
     let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
@@ -370,18 +371,64 @@ function getOption(data) {
     return option;
 }
 
-function getDailyData(data) {
-    // data looks like
-    // 确诊 [date_i: {place_j: value}]
-    let entries = Object.entries(data);
-    for (const [status, value] of entries) {
-        console.log(status);
-        let daily_total_dict = Object.entries(value);
-        for (const [date, daily_total] of daily_total_dict) {
-
+function getLineOption(data) {
+    let option = {
+        title: {
+            text: "全国新型肺炎疫情实时动态",
+            subtext: "数据来源：维基百科 | " + new Date().toLocaleString('zh').slice(0, -3),
+            sublink: "https://zh.wikipedia.org/wiki/2019年%EF%BC%8D2020年新型冠狀病毒肺炎事件",
+            left: "center"
+        },
+        toolbox: {
+            show: true,
+            //orient: 'vertical',
+            left: 'left',
+            top: 'top',
+            feature: {
+                dataView: {
+                    readOnly: false
+                },
+                restore: {},
+                saveAsImage: {}
+            }
+        },
+        series: [{
+                name: '确诊',
+                type: 'line',
+                data: data.确诊
+            },
+            {
+                name: '死亡',
+                type: 'line',
+                data: data.死亡
+            },
+            {
+                name: '治愈',
+                type: 'line',
+                data: data.治愈
+            }
+        ],
+        legend: {
+            data: ['确诊', '死亡', '治愈'],
+            orient: 'horizontal',
+            right: '5%'
+        },
+        grid: {
+            left: '3%',
+            right: '3%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: data.日期
+        },
+        yAxis: {
+            type: 'value'
         }
     }
-
+    return option;
 }
 // console.log(myChart)
 // var option = getOption(data)
