@@ -24,7 +24,6 @@ fetch(url)
             .then((myJson) => {
                 console.log("myJson", myJson);
                 var data = myJson;
-                getDailyData(data);
                 let shader_data = getShadedData(data.确诊.累计);
                 let geoOption = getOption(data);
                 geoChart.setOption(geoOption);
@@ -149,6 +148,7 @@ function addShader(provList, bmap) {
 // }
 
 function getOption(data) {
+    let dailyData = getDailyData(data);
     let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
@@ -332,38 +332,23 @@ function getOption(data) {
                 zlevel: 1
             },
             {
-                name: '邮件营销',
+                name: '确诊',
                 type: 'line',
-                stack: '总量',
-                data: [120, 132, 101, 134, 90, 230, 210]
+                data: data.每日.确诊
             },
             {
-                name: '联盟广告',
+                name: '死亡',
                 type: 'line',
-                stack: '总量',
-                data: [220, 182, 191, 234, 290, 330, 310]
+                data: data.每日.死亡
             },
             {
-                name: '视频广告',
+                name: '治愈',
                 type: 'line',
-                stack: '总量',
-                data: [150, 232, 201, 154, 190, 330, 410]
-            },
-            {
-                name: '直接访问',
-                type: 'line',
-                stack: '总量',
-                data: [320, 332, 301, 334, 390, 330, 320]
-            },
-            {
-                name: '搜索引擎',
-                type: 'line',
-                stack: '总量',
-                data: [820, 932, 901, 934, 1290, 1330, 1320]
+                data: data.每日.治愈
             }
         ],
         legend: {
-            data: ['邮件营销', '联盟广告', '视频广告', '直接访问', '搜索引擎'],
+            data: ['确诊', '死亡', '治愈'],
             orient: 'horizontal',
             right: '5%'
         },
@@ -376,7 +361,7 @@ function getOption(data) {
         xAxis: {
             type: 'category',
             boundaryGap: false,
-            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+            data: data.每日.日期
         },
         yAxis: {
             type: 'value'
