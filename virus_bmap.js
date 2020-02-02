@@ -22,7 +22,7 @@ fetch(url)
             .then((myJson) => {
                 console.log("myJson", myJson);
                 var data = myJson;
-                let shader_data = getShadedData(data.确诊.累计);
+                let shader_data = getShadedData(data.确诊.累计.slice(0,-1));
                 let geoOption = getOption(data), lineOption = getLineOption(data.每日);
                 geoChart.setOption(geoOption);
                 lineChart.setOption(lineOption);
@@ -61,7 +61,6 @@ function convertData(data) {
 // }).slice(0, 6));
 
 function bmapAddControl(bmap) {
-    bmap.disableScrollWheelZoom();
     bmap.addControl(new BMap.NavigationControl());
     bmap.addControl(new BMap.ScaleControl());
     bmap.addControl(new BMap.MapTypeControl());
@@ -179,8 +178,8 @@ function getOption(data) {
         },
         bmap: {
             center: [114.114129, 32.550339],
-            zoom: 6,
-            roam: true,
+            zoom: 5,
+            roam: 'move',
             mapStyle: {
                 styleJson: [{
                     'featureType': 'water',

@@ -7,16 +7,26 @@
     <meta charset="utf-8">
     <title>全国新型肺炎疫情实时动态</title>
     <style>
-        body {
-            overflow: hidden;
+        .example {
+            overflow-y: auto;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .example::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE and Edge */
+        .example {
+            -ms-overflow-style: none;
         }
     </style>
 </head>
 
-<body style="position: absolute; width: 100%; height: 100%; overflow: auto;">
+<body class="example" style="position: absolute; width: 100%; height: 100%;">
     <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-    <div id="main" style="position: relative; width: 100%; height:95%; margin: auto;"></div>
-    <div id="line" style="position: relative; width: 100%; height:99%; margin: auto;"></div>
+    <div id="main" style="position: relative; width: 100%; height:100%; margin: auto;"></div>
+    <div id="line" style="position: relative; width: 100%; height:100%; margin: auto;"></div>
     <script src="./virus_bmap.js"></script>
 </body>
 
