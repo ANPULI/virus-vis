@@ -22,7 +22,8 @@ fetch(url)
             .then((myJson) => {
                 console.log("myJson", myJson);
                 var data = myJson;
-                let shader_data = getShadedData(data.省级.累计.slice(0,-2));
+                data.省级.累计 = data.省级.累计.sort(function (a, b) {return b.value[0] - a.value[0];});
+                let shader_data = getShadedData(data.省级.累计);
                 let geoOption = getOption(data), lineOption = getLineOption(data.每日);
                 geoChart.setOption(geoOption);
                 lineChart.setOption(lineOption);
@@ -70,9 +71,7 @@ function bmapAddControl(bmap) {
 
 function getShadedData(data) {
     // ['#FFFFFF', '#FFF6CE', '#FFD20A', '#EA3300', '#8B0000']
-    data = data.sort(function (a, b) {
-        return b.value[0] - a.value[0];
-    });
+    console.log(data)
     let res = new Array();
     let N = data.length;
     let Q = N / 4;
@@ -119,7 +118,7 @@ function addShader(provList, bmap) {
         provList.forEach(function (item) {
             getBoundary(item);
         });
-    }, 50);
+    }, 20);
 }
 
 // function promisedGetAdminRegionName(myGeo, lng, lat) {
@@ -150,9 +149,7 @@ function addShader(provList, bmap) {
 // }
 
 function getOption(data) {
-    let convertedData = convertData(data.省级.累计).sort(function (a, b) {
-        return b.value[2] - a.value[2];
-    });
+    let convertedData = convertData(data.省级.累计);
     let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
