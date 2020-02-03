@@ -4,7 +4,7 @@ This is the visualization of the influence of the [2019-nCov](https://www.wikiwa
 
 ## Current Progress
 
-- [x] Province-level fata of confirmed/fead/cured cases (2020/1/29)
+- [x] Province-level data of confirmed/fead/cured cases (2020/1/29)
 - [ ] City-level data of confirmed cases
 - [x] Nation-level daily data for line charts
 

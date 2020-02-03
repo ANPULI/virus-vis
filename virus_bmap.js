@@ -22,7 +22,7 @@ fetch(url)
             .then((myJson) => {
                 console.log("myJson", myJson);
                 var data = myJson;
-                let shader_data = getShadedData(data.确诊.累计.slice(0,-1));
+                let shader_data = getShadedData(data.省级.累计.slice(0,-2));
                 let geoOption = getOption(data), lineOption = getLineOption(data.每日);
                 geoChart.setOption(geoOption);
                 lineChart.setOption(lineOption);
@@ -70,6 +70,9 @@ function bmapAddControl(bmap) {
 
 function getShadedData(data) {
     // ['#FFFFFF', '#FFF6CE', '#FFD20A', '#EA3300', '#8B0000']
+    data = data.sort(function (a, b) {
+        return b.value[0] - a.value[0];
+    });
     let res = new Array();
     let N = data.length;
     let Q = N / 4;
@@ -147,6 +150,9 @@ function addShader(provList, bmap) {
 // }
 
 function getOption(data) {
+    let convertedData = convertData(data.省级.累计).sort(function (a, b) {
+        return b.value[2] - a.value[2];
+    });
     let option = {
         title: {
             text: "全国新型肺炎疫情实时动态",
@@ -159,8 +165,7 @@ function getOption(data) {
             showDelay: 0,
             transitionDuration: 0.2,
             formatter: function (params) {
-                let v = (params.value[2] === undefined) ? params.value : params.value[2]
-                return params.seriesName + '<br/>' + params.name + ': ' + v;
+                return params.seriesName + ' - ' + params.name + '<br/>' + '确诊: ' + params.value[2] + '<br/>' + '死亡: ' + params.value[3] + '<br/>' + '治愈: ' + params.value[4];
             }
         },
         toolbox: {
@@ -281,10 +286,10 @@ function getOption(data) {
             }
         },
         series: [{
-                name: '确诊人数',
+                name: '疫情影响人数',
                 type: 'scatter',
                 coordinateSystem: 'bmap',
-                data: convertData(data.确诊.累计),
+                data: convertedData,
                 symbolSize: function (val) {
                     return 20 * Math.log10(val[2] + 1);
                 },
@@ -306,9 +311,7 @@ function getOption(data) {
                 name: 'Top 5',
                 type: 'effectScatter',
                 coordinateSystem: 'bmap',
-                data: convertData(data.确诊.累计).sort(function (a, b) {
-                    return b.value[2] - a.value[2];
-                }).slice(0, 6),
+                data: convertedData.slice(0, 6),
                 symbolSize: function (val) {
                     return 20 * Math.log10(val[2] + 1);
                 },
