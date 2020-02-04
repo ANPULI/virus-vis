@@ -7,6 +7,7 @@ import geoJson from './assets/map.geo.json'
 
 const url = "https://virus-spider.now.sh/api";
 var geoChart = echarts.init(document.getElementById('main'));
+var lineAccChart = echarts.init(document.getElementById('lineAcc'));
 var lineChart = echarts.init(document.getElementById('line'));
 echarts.registerMap('CN', geoJson);
 // var data;
@@ -21,11 +22,16 @@ fetch(url)
         response.json()
             .then((myJson) => {
                 console.log("myJson", myJson);
+                window.myJson = myJson;
                 var data = myJson;
-                data.省级.累计 = data.省级.累计.sort(function (a, b) {return b.value[0] - a.value[0];});
+                data.省级.累计 = data.省级.累计.sort(function (a, b) {
+                    return b.value[0] - a.value[0];
+                });
                 let shader_data = getShadedData(data.省级.累计);
-                let geoOption = getOption(data), lineOption = getLineOption(data.每日);
+                let geoOption = getOption(data),
+                    [lineAccOption, lineOption] = getLineOption(data.每日);
                 geoChart.setOption(geoOption);
+                lineAccChart.setOption(lineAccOption);
                 lineChart.setOption(lineOption);
                 var bmap = geoChart.getModel().getComponent('bmap').getBMap();
                 bmapAddControl(bmap);
@@ -56,10 +62,6 @@ function convertData(data) {
     }
     return res;
 }
-// console.log(convertData(data));
-// console.log(convertData(data).sort(function (a, b) {
-//     return b.value[2] - a.value[2];
-// }).slice(0, 6));
 
 function bmapAddControl(bmap) {
     bmap.addControl(new BMap.NavigationControl());
@@ -121,32 +123,13 @@ function addShader(provList, bmap) {
     }, 20);
 }
 
-// function promisedGetAdminRegionName(myGeo, lng, lat) {
-//     return new Promise((resolve, reject) => {
-//         myGeo.getLocation(new BMap.Point(lng, lat), (result) => {
-//             if (result) Promise.resolve(result.addressComponents.province);
-//             else reject();
-//         })
-//     });
-// }
-
-// function promisedGetGeoCoord(myGeo, place) {
-//     return new Promise((resolve, reject) => {
-//         myGeo.getPoint(place, (point) => {
-//             if (point) Promise.resolve(point);
-//             else reject();
-//         }, place);
-//     });
-// }
-
-// function convertStandardRegionName(myGeo, province) {
-//     // var coord = promisedGetGeoCoord(myGeo, province);
-//     // return promisedGetAdminRegionName(myGeo, coord.lng, coord.lat);
-//     return new Promise((resolve, reject) => {
-//         let coord = promisedGetGeoCoord(myGeo, province);
-//         Promise.resolve(promisedGetAdminRegionName(myGeo, coord.lng, coord.lat));
-//     });
-// }
+function getAccData(data) {
+    let res = data.slice(0, 1);
+    for (let i = 1; i < data.length; i++) {
+        res.push(res[res.length - 1] + data[i]);
+    }
+    return res;
+}
 
 function getOption(data) {
     let convertedData = convertData(data.省级.累计);
@@ -154,7 +137,7 @@ function getOption(data) {
         title: {
             text: "全国新型肺炎疫情实时动态",
             subtext: "数据来源：维基百科 | " + new Date().toLocaleString('zh').slice(0, -3),
-            sublink: "https://zh.wikipedia.org/wiki/2019年%EF%BC%8D2020年新型冠狀病毒肺炎事件",
+            sublink: "https://zh.wikipedia.org/wiki/%E6%96%B0%E5%9E%8B%E5%86%A0%E7%8B%80%E7%97%85%E6%AF%92%E8%82%BA%E7%82%8E%E4%B8%AD%E5%9C%8B%E5%A4%A7%E9%99%B8%E7%96%AB%E6%83%85%E7%97%85%E4%BE%8B",
             left: "center"
         },
         tooltip: {
@@ -335,19 +318,79 @@ function getOption(data) {
 }
 
 function getLineOption(data) {
+    let optionAcc = {
+        title: {
+            text: "全国疫情累计趋势图",
+            left: "center"
+        },
+        tooltip: {
+            trigger: 'axis',
+            showDelay: 0,
+            transitionDuration: 0.2
+        },
+        toolbox: {
+            show: true,
+            //orient: 'vertical',
+            right: '3%',
+            top: 'top',
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        legend: {
+            data: ['确诊', '死亡', '治愈'],
+            orient: 'horizontal',
+            left: 'center',
+            top: '3%'
+        },
+        series: [{
+                name: '确诊',
+                type: 'line',
+                data: getAccData(data.确诊)
+            },
+            {
+                name: '死亡',
+                type: 'line',
+                yAxisIndex: 1,
+                data: getAccData(data.死亡)
+            },
+            {
+                name: '治愈',
+                type: 'line',
+                yAxisIndex: 1,
+                data: getAccData(data.治愈)
+            }
+        ],
+        grid: {
+            left: '1%',
+            right: '3%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: data.日期
+        },
+        yAxis: [{
+            name: '确诊',
+            type: 'value'
+        }, {
+            name: '死亡/治愈',
+            type: 'value',
+            splitLine: {show: false},
+            max: function (value) {return Math.ceil(value.max / 50) * 100}
+        }]
+    };
     let option = {
         title: {
             text: "全国疫情新增趋势图",
             left: "center"
         },
         tooltip: {
-            trigger: 'item',
+            trigger: 'axis',
             showDelay: 0,
-            transitionDuration: 0.2,
-            formatter: function (params) {
-                let v = (params.value[2] === undefined) ? params.value : params.value[2];
-                return params.seriesName + '<br/>' + params.name + ': ' + v;
-            }
+            transitionDuration: 0.2
         },
         toolbox: {
             show: true,
@@ -372,16 +415,18 @@ function getLineOption(data) {
             {
                 name: '死亡',
                 type: 'line',
+                yAxisIndex: 1,
                 data: data.死亡
             },
             {
                 name: '治愈',
                 type: 'line',
+                yAxisIndex: 1,
                 data: data.治愈
             }
         ],
         grid: {
-            left: '3%',
+            left: '1%',
             right: '3%',
             bottom: '3%',
             containLabel: true
@@ -391,11 +436,17 @@ function getLineOption(data) {
             boundaryGap: false,
             data: data.日期
         },
-        yAxis: {
+        yAxis: [{
+            name: '确诊',
             type: 'value'
-        }
-    }
-    return option;
+        }, {
+            name: '死亡/治愈',
+            type: 'value',
+            splitLine: {show: false},
+            max: function (value) {return Math.ceil(value.max / 60) * 100}
+        }]
+    };
+    return [optionAcc, option];
 }
 // console.log(myChart)
 // var option = getOption(data)
