@@ -8,6 +8,6 @@
     },
     "devDependencies": {
         "@types/echarts": "^4.4.2",
-        "parcel": "^1.12.4"
+        "parcel": "^2.8.2"
     }
 }
